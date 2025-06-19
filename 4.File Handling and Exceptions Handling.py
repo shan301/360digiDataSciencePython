@@ -1,238 +1,265 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Mar 13 19:19:12 2025
+Updated for repository consistency and additional concepts.
 
 @author: Shantanu
 """
 
-"""File Handling in Python
-Python provides built-in functions to work with files. The script demonstrates:
+"""4. File Handling and Exception Handling
+File handling enables reading, writing, and managing files, while exception handling ensures robust code by managing errors. These are critical for data analysis tasks like processing datasets.
 
-1. Getting & Changing the Working Directory"""
+4.1. Working Directory
+Manage the current working directory to organize file operations."""
 import os
-os.getcwd()  # Get the current working directory
-os.chdir('D:\\Data')  # Change directory to 'D:\\Data'
+import pathlib
 
-"""2. Opening Files"""
-f = open("demo1.txt")  # Default mode is "r" (read)
-"""The open() function opens a file.
-Modes:
-"r" - Read (default mode).
-"w" - Write (overwrites existing content).
-"a" - Append (adds content without deleting previous content).
-"x" - Create a new file."""
+print(f"Current Directory: {os.getcwd()}")
+# os.chdir('D:\\Data')  # Commented to avoid changing directory in demo
+print(f"Using pathlib: {pathlib.Path.cwd()}")  # Modern alternative
 
-"""3. Reading Files"""
-with open("demo1.txt") as file:
-    xy = file.read()
-print(xy)
-"""Using with open(), the file is automatically closed after reading.
-file.read() reads the entire file.
-file.readline() reads one line at a time.
-file.readlines() returns a list of lines."""
+"""4.2. Opening and Reading Files
+Open files in various modes and read their contents."""
+with open("demo1.txt", "w") as f:
+    f.write("Sample data for demo1.txt")
+with open("demo1.txt", "r") as file:
+    content = file.read()
+print(f"File Content: {content}")  # Output: File Content: Sample data for demo1.txt
 
-"""4. Writing to Files"""
-f = open("demo1.txt", "w")
-f.write("Adding new lines")
-f.close()
-""" "w" mode deletes existing content before writing.
-To append data: """
-f = open("demo1.txt", "a")
-f.write("\nNow the file has more content!")
-f.close()
-""" "a" mode adds content without deleting existing data."""
+"""4.3. Writing and Appending Files
+Write new content or append to existing files."""
+with open("demo1.txt", "w") as f:
+    f.write("Overwritten content")
+with open("demo1.txt", "a") as f:
+    f.write("\nAppended content")
+with open("demo1.txt", "r") as f:
+    print(f"Updated Content: {f.read()}")  # Output: Overwritten content\nAppended content
 
-"""5. Creating a File"""
-f = open("demo2.txt", "x")  # Creates a new file
-f.write("New file")
-f.close()
-""" "x" creates a file; errors occur if it already exists."""
-
-"""6. Deleting a File"""
-import os
-os.remove("demo2.txt")  # Deletes "demo2.txt"
-"""os.remove(filename) deletes a file."""
-
-
-"""Exception Handling in Python
-1. Handling Exceptions with try-except"""
+"""4.4. Creating Files
+Create new files using 'x' mode, which fails if the file exists."""
 try:
-    x = eval(input("Enter the 1st value: "))
-    y = eval(input("Enter the 2nd value: "))
-    results = x + y
-    print(results)
-except:
-    print("Please enter a valid number")
-"""try: contains code that may cause an error.
-except: executes if an error occurs."""
+    with open("demo2.txt", "x") as f:
+        f.write("Newly created file")
+    print("File created successfully")
+except FileExistsError:
+    print("File already exists")
 
-"""2. Handling Specific Exceptions"""
-try:
-    x = eval(input("Enter the 1st value: "))
-    y = eval(input("Enter the 2nd value: "))
-    results = x / y
-    print("Final results =", results)
-except ZeroDivisionError:
-    print("Please enter a non-zero divisor")
-except NameError:
-    print("Please enter valid numbers")
-except TypeError:
-    print("Please enter numbers of the same type")
-"""Handles different exceptions separately."""
+"""4.5. Deleting Files
+Safely delete files after checking existence."""
+if os.path.exists("demo2.txt"):
+    os.remove("demo2.txt")
+    print("File deleted")
+else:
+    print("File does not exist")
 
-"""3. Using else and finally"""
+"""4.6. Directory Handling
+Create, list, and remove directories for organizing data files."""
+os.makedirs("data_folder", exist_ok=True)
+print(f"Files in data_folder: {os.listdir('data_folder')}")
+# os.rmdir("data_folder")  # Commented to keep folder for exercises
+path = pathlib.Path("data_folder")
+print(f"Is directory: {path.is_dir()}")  # Output: Is directory: True
+
+"""4.7. Context Managers for Multiple Files
+Handle multiple files simultaneously using contextlib."""
+from contextlib import ExitStack
+
+with ExitStack() as stack:
+    file1 = stack.enter_context(open("demo1.txt", "r"))
+    file2 = stack.enter_context(open("demo3.txt", "w"))
+    file2.write(file1.read())
+print("Content copied from demo1.txt to demo3.txt")
+
+"""4.8. Basic Exception Handling
+Use try-except to handle runtime errors."""
 try:
     x = int(input("Enter a number: "))
-    y = int(input("Enter another number: "))
-    z = x / y
+    print(f"Number: {x}")
+except ValueError:
+    print("Please enter a valid integer")
+
+"""4.9. Specific Exception Handling
+Handle different types of exceptions separately."""
+try:
+    x = int(input("Enter numerator: "))
+    y = int(input("Enter denominator: "))
+    result = x / y
+    print(f"Result: {result}")
 except ZeroDivisionError:
-    print("Division by zero is not allowed")
+    print("Cannot divide by zero")
+except ValueError:
+    print("Please enter valid integers")
+
+"""4.10. Else and Finally Blocks
+Use else for code that runs if no exception occurs, and finally for cleanup."""
+try:
+    x = int(input("Enter a number: "))
+    y = 10 / x
+except ZeroDivisionError:
+    print("Cannot divide by zero")
 else:
-    print("Division =", z)
+    print(f"Result: {y}")
 finally:
-    print("Finally block executed")
-"""else: runs if no exception occurs.
-finally: always executes, used for cleanup."""
+    print("Operation completed")
 
-"""4. Raising Custom Exceptions"""
-x = int(input("Enter the number: "))
-if x < 18:
-    raise Exception("You are not eligible for voting")
-"""raise is used to trigger user-defined exceptions."""
+"""4.11. Raising Custom Exceptions
+Trigger user-defined errors for specific conditions."""
+age = int(input("Enter your age: "))
+if age < 18:
+    raise ValueError("You must be 18 or older")
+print("You are eligible")
 
-"""Summary
-File Handling
+"""4.12. Custom Exception Classes
+Define custom exceptions for specific error scenarios."""
+class DataValidationError(Exception):
+    pass
 
-Open, read, write, append, and delete files.
-Use "x" mode to create a file and "a" mode to append.
-Use with open() to handle files safely.
-Exception Handling
+def validate_data(value):
+    if not isinstance(value, (int, float)) or value < 0:
+        raise DataValidationError("Data must be a non-negative number")
+    return value
 
-Use try-except to catch errors.
-Use specific exception types for better error handling.
-else runs when no exception occurs.
-finally always runs, useful for cleanup.
-Use raise for custom exceptions."""
+try:
+    validate_data(-5)
+except DataValidationError as e:
+    print(f"Error: {e}")
 
-
-"""File Handling Exercises
+"""4. File Handling and Exception Handling Exercises
 Exercise 1: Create and Write to a File
-Task: Write a Python program to create a file called testfile.txt and write "Hello, this is a test file" into it."""
-# Creating and writing to a file
-with open("testfile.txt", "w") as f:
-    f.write("Hello, this is a test file")
+Write a program to create 'data.txt' and write 'This is a data file' to it."""
+with open("data.txt", "w") as f:
+    f.write("This is a data file")
+print("File created and written")
 
-print("File created and written successfully!")
+"""Exercise 2: Read Entire File
+Read and print the contents of 'data.txt'."""
+try:
+    with open("data.txt", "r") as f:
+        content = f.read()
+    print(f"Content: {content}")
+except FileNotFoundError:
+    print("Error: File not found")
 
-"""Exercise 2: Read a File
-Task: Open testfile.txt, read the contents, and print them."""
-# Reading the file
-with open("testfile.txt", "r") as f:
-    content = f.read()
+"""Exercise 3: Append to File
+Append 'New data added' to 'data.txt'."""
+with open("data.txt", "a") as f:
+    f.write("\nNew data added")
+print("Text appended")
 
-print("File Content:", content)
+"""Exercise 4: Read Line by Line
+Read 'data.txt' line by line and print each line."""
+try:
+    with open("data.txt", "r") as f:
+        for line in f:
+            print(line.strip())
+except FileNotFoundError:
+    print("Error: File not found")
 
-"""Exercise 3: Append Text to a File
-Task: Append "This is an additional line" to testfile.txt without deleting its previous content."""
-# Appending to a file
-with open("testfile.txt", "a") as f:
-    f.write("\nThis is an additional line")
+"""Exercise 5: Count Words in File
+Count the number of words in 'data.txt'."""
+try:
+    with open("data.txt", "r") as f:
+        words = f.read().split()
+    print(f"Word count: {len(words)}")
+except FileNotFoundError:
+    print("Error: File not found")
 
-print("Text appended successfully!")
+"""Exercise 6: Create Directory
+Create a directory 'datasets' if it doesn't exist."""
+os.makedirs("datasets", exist_ok=True)
+print("Directory 'datasets' created or already exists")
 
-"""Exercise 4: Read a File Line by Line
-Task: Read testfile.txt line by line and print each line separately."""
-# Reading line by line
-with open("testfile.txt", "r") as f:
-    for line in f:
-        print(line.strip())  # strip() removes extra newlines
+"""Exercise 7: List Directory Contents
+List all files in the 'datasets' directory."""
+print(f"Files in 'datasets': {os.listdir('datasets')}")
 
-"""Exercise 5: Count Number of Words in a File
-Task: Count the number of words in testfile.txt."""
-# Counting words
-with open("testfile.txt", "r") as f:
-    content = f.read()
-word_count = len(content.split())
-print("Total number of words:", word_count)
+"""Exercise 8: Copy File Content
+Copy the content of 'data.txt' to a new file 'data_copy.txt'."""
+try:
+    with open("data.txt", "r") as src, open("data_copy.txt", "w") as dst:
+        dst.write(src.read())
+    print("Content copied to data_copy.txt")
+except FileNotFoundError:
+    print("Error: Source file not found")
 
-"""Exercise 6: Delete a File
-Task: Delete testfile.txt using Python."""
-import os
-# Check if file exists before deleting
-if os.path.exists("testfile.txt"):
-    os.remove("testfile.txt")
-    print("File deleted successfully!")
-else:
-    print("File does not exist!")
-
-"""Exception Handling Exercises
-Exercise 7: Handle Division by Zero
-Task: Write a Python program that asks the user for two numbers and divides them. 
-Handle the case when the user tries to divide by zero."""
+"""Exercise 9: Handle Division Errors
+Ask for two numbers and divide them, handling zero division and invalid inputs."""
 try:
     a = int(input("Enter numerator: "))
     b = int(input("Enter denominator: "))
     result = a / b
-    print("Result:", result)
+    print(f"Result: {result}")
 except ZeroDivisionError:
-    print("Error: Division by zero is not allowed.")
+    print("Error: Cannot divide by zero")
 except ValueError:
-    print("Error: Please enter valid numbers.")
+    print("Error: Please enter valid numbers")
 
-"""Exercise 8: Handle File Not Found Error
-Task: Try to open a file that does not exist and handle the FileNotFoundError."""
+"""Exercise 10: Handle File Not Found
+Try to read a non-existent file and handle the FileNotFoundError."""
 try:
-    with open("missingfile.txt", "r") as f:
-        content = f.read()
-        print(content)
+    with open("nonexistent.txt", "r") as f:
+        print(f.read())
 except FileNotFoundError:
-    print("Error: The file does not exist.")
+    print("Error: File does not exist")
 
-"""Exercise 9: Handle Multiple Exceptions
-Task: Ask the user to enter two numbers. Handle errors if the user enters a non-numeric value or tries to divide by zero."""
+"""Exercise 11: Use Finally Block
+Modify Exercise 9 to print 'Calculation done' using finally."""
 try:
-    x = int(input("Enter first number: "))
-    y = int(input("Enter second number: "))
-    print("Result:", x / y)
+    a = int(input("Enter numerator: "))
+    b = int(input("Enter denominator: "))
+    result = a / b
+    print(f"Result: {result}")
 except ZeroDivisionError:
-    print("Error: You cannot divide by zero.")
+    print("Error: Cannot divide by zero")
 except ValueError:
-    print("Error: Please enter only numbers.")
-
-"""Exercise 10: Use finally Block
-Task: Modify Exercise 9 to always print "Program execution completed" using the finally block."""
-try:
-    x = int(input("Enter first number: "))
-    y = int(input("Enter second number: "))
-    print("Result:", x / y)
-except ZeroDivisionError:
-    print("Error: You cannot divide by zero.")
-except ValueError:
-    print("Error: Please enter only numbers.")
+    print("Error: Please enter valid numbers")
 finally:
-    print("Program execution completed.")
+    print("Calculation done")
 
-"""Exercise 11: Raise a Custom Exception
-Task: Write a program that asks the user for their age. 
-If the age is less than 18, raise an exception with the message "You must be 18 or older". """
-age = int(input("Enter your age: "))
+"""Exercise 12: Raise Custom Exception
+Ask for a dataset size; raise an exception if it's less than 10."""
+size = int(input("Enter dataset size: "))
+if size < 10:
+    raise ValueError("Dataset size must be at least 10")
+print("Dataset size is valid")
 
-if age < 18:
-    raise Exception("You must be 18 or older to proceed.")
-else:
-    print("You are eligible!")
+"""Exercise 13: Custom Exception for Data Validation
+Define a custom exception and use it to validate a positive number."""
+class InvalidDataError(Exception):
+    pass
 
+def check_positive(value):
+    if value <= 0:
+        raise InvalidDataError("Value must be positive")
+    return value
 
-"""Summary of Concepts Covered
-✅ File Handling
-Opening, reading, writing, and appending files
-Reading files line by line
-Counting words in a file
-Deleting a file
-✅ Exception Handling
-Handling ZeroDivisionError
-Handling FileNotFoundError
-Handling multiple exceptions
-Using finally for cleanup
-Raising custom exceptions"""
+try:
+    value = float(input("Enter a positive number: "))
+    check_positive(value)
+    print(f"Valid value: {value}")
+except InvalidDataError as e:
+    print(f"Error: {e}")
+except ValueError:
+    print("Error: Please enter a valid number")
+
+"""Exercise 14: Write CSV File
+Write a list of dictionaries to a CSV file 'records.csv'."""
+import csv
+
+data = [{"name": "Alice", "score": 85}, {"name": "Bob", "score": 90}]
+with open("records.csv", "w", newline="") as f:
+    writer = csv.DictWriter(f, fieldnames=["name", "score"])
+    writer.writeheader()
+    writer.writerows(data)
+print("CSV file written")
+
+"""Exercise 15: Read CSV File
+Read 'records.csv' and print its contents."""
+try:
+    with open("records.csv", "r") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            print(row)
+except FileNotFoundError:
+    print("Error: CSV file not found")
 
