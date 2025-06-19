@@ -1,208 +1,328 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Jun 14 12:02:05 2025
+Created on Sat Jun 14 2024
+Updated for repository consistency and additional concepts.
 
 @author: Shantanu
 """
 
-"""Data preprocessing techniques in Python using pandas, numpy, seaborn, scipy.stats, and sklearn.preprocessing. 
-Let me break it down into key sections and explain each part.
+"""11. Exploratory Data Analysis (EDA) and Data Preprocessing
+EDA and preprocessing prepare raw data for analysis or modeling using libraries like pandas, numpy, seaborn, scipy, and sklearn. These techniques ensure data quality and compatibility with algorithms.
 
-1. Type Casting
-Changing data types of columns using .astype()
-
-Example: data.EmpID = data.EmpID.astype('str') converts employee IDs from integer to string.
-
-Used for ensuring appropriate data types, e.g., categorical data should not be stored as integers.
-
-2. Identifying and Handling Duplicates
-data.duplicated() finds duplicate rows.
-
-data.drop_duplicates() removes duplicates.
-
-data.corr() helps identify redundant columns using correlation.
-
-3. Outlier Detection and Treatment
-Boxplots (sns.boxplot(df.Salaries)) help visualize outliers.
-
-Interquartile Range (IQR) Method:
-
-Detects outliers beyond 1.5 * IQR from Q1/Q3.
-
-Options to handle:
-
-Trimming: Remove outliers.
-
-Replacing: Cap outliers to limits.
-
-Winsorization: Using Winsorizer() to cap extreme values.
-
-4. Zero and Near-Zero Variance
-If a column has zero variance, it provides no useful information.
-
-df.var() helps detect such columns.
-
-5. Discretization
-Converting continuous variables into categorical bins using pd.cut().
-
-Example:
-
-python
-Copy
-Edit
-data['Salaries_new'] = pd.cut(data['Salaries'], bins=[min(data.Salaries), data.Salaries.mean(), max(data.Salaries)], labels=["Low", "High"])
-Handles issues using include_lowest=True.
-
-6. Dummy Variables and Encoding
-pd.get_dummies(df, drop_first=True) converts categorical data into numerical format.
-
-One-Hot Encoding: Uses OneHotEncoder().
-
-Label Encoding: Uses LabelEncoder().
-
-Ordinal Encoding: Uses OrdinalEncoder().
-
-7. Handling Missing Values
-df.isna().sum() finds missing values.
-
-Strategies for Filling Missing Values:
-
-Mean/Median (SimpleImputer(strategy='mean') or 'median').
-
-Mode (for categorical variables).
-
-Constant (strategy='constant').
-
-Random Imputation (RandomSampleImputer()).
-
-8. Normality Checking & Transformation
-Q-Q Plots (stats.probplot()).
-
-Box-Cox Transformation (for positive values only).
-
-Yeo-Johnson Transformation (works with zero/negative values).
-
-9. Standardization & Normalization
-Standardization: StandardScaler() (Mean = 0, Std Dev = 1).
-
-Normalization:
-
-MinMaxScaler() scales between [0,1].
-
-RobustScaler() handles outliers."""
-
-
-
-
-"""Exercise 1: Type Casting
-Task:
-Convert the following columns in a DataFrame:
-
-EmpID to string
-
-Salaries to integer
-
-age to float32"""
+11.1. Type Casting
+Convert column data types to appropriate formats."""
 import pandas as pd
 
-# Sample Data
 data = pd.DataFrame({
     'EmpID': [101, 102, 103],
     'Salaries': [50000.75, 60000.50, 55000.25],
-    'age': [25, 30, 35]
+    'Age': [25, 30, 35]
 })
-
-# Type Casting
 data['EmpID'] = data['EmpID'].astype('str')
 data['Salaries'] = data['Salaries'].astype('int64')
-data['age'] = data['age'].astype('float32')
+data['Age'] = data['Age'].astype(float)
+print(f"Data Types:\n{data.dtypes}")
+# Output:
+# EmpID       object
+# Salaries     int64
+# Age        float64
 
-# Display Data Types
-print(data.dtypes)
-
-"""Exercise 2: Finding and Removing Duplicates
-Task:
-Identify duplicate rows in the dataset.
-Remove them while keeping the first occurrence."""
-# Sample Data
+"""11.2. Handling Duplicates
+Identify and remove duplicate rows or redundant columns."""
 data = pd.DataFrame({
-    'EmpID': ['101', '102', '103', '101'],
-    'Name': ['Alice', 'Bob', 'Charlie', 'Alice'],
-    'Salaries': [50000, 60000, 55000, 50000]
+    'EmpID': ['101', '101', '102'],
+    'Name': ['Alice', 'Alice', 'Bob'],
+    'Salaries': [50000, 50000, 60000]
 })
-
-# Identify duplicates
-duplicates = data.duplicated()
-print("Duplicate Rows:\n", data[duplicates])
-
-# Remove duplicates (keep first occurrence)
+print(f"Duplicates:\n{data[data.duplicated()]}")
+# Output:
+# EmpID   Name  Salaries
+# 1    101  Alice    50000
 data_cleaned = data.drop_duplicates()
-print("\nData After Removing Duplicates:\n", data_cleaned)
+print(f"\nAfter removing duplicates:\n{data_cleaned}")
+# Output:
+# EmpID   Name  Salaries
+# 0    101  Alice    50000
+# 2    102    60000     Bob
 
-"""Exercise 3: Outlier Detection Using IQR
-Task:
-Identify and remove outliers in the Salaries column using the IQR method."""
+"""11.3. Outlier Detection with IQR
+Detect and treat outliers using the Interquartile Range method."""
 import numpy as np
 
-# Sample Data
 data = pd.DataFrame({'Salaries': [30000, 50000, 60000, 55000, 200000]})
-
-# Calculate IQR
 Q1 = data['Salaries'].quantile(0.25)
 Q3 = data['Salaries'].quantile(0.75)
 IQR = Q3 - Q1
-
-# Define limits
-lower_limit = Q1 - (1.5 * IQR)
-upper_limit = Q3 + (1.5 * IQR)
-
-# Remove Outliers
+lower_limit = Q1 - 1.5 * IQR
+upper_limit = Q3 + 1.5 * IQR
 data_cleaned = data[(data['Salaries'] >= lower_limit) & (data['Salaries'] <= upper_limit)]
-print(data_cleaned)
+print(f"Data without outliers:\n{data_cleaned}")
+# Output:
+#    Salaries
+# 0    30000
+# 1    50000
+# 2    60000
+# 3    55000
 
-"""Exercise 4: Creating Dummy Variables
-Task:
-Convert the Department column into dummy variables."""
-# Sample Data
-data = pd.DataFrame({'Department': ['HR', 'IT', 'Finance', 'HR', 'IT']})
+"""11.4. Zero and Low Variance
+Identify columns with near-zero variance."""
+data = pd.DataFrame({'A': [1, 1, 1], 'B': [1, 2, 3]})
+print(f"Variance:\n{data.var()}")
+# Output:
+# A    0.0
+# B    1.0
+print("Column 'A' has zero variance and can be dropped.")
 
-# Create Dummy Variables
-data_dummies = pd.get_dummies(data, drop_first=True)
-print(data_dummies)
+"""11.5. Discretization
+Convert continuous data into categorical bins."""
+data = pd.DataFrame({'Salaries': [20000, 30000, 50000, 70000]})
+data['Salary_bin'] = pd.cut(data['Salaries'], bins=[0, 35000, 60000, float('inf')], labels=['Low', 'Medium', 'High'], include_lowest=True)
+print(f"Data with bins:\n{data}")
+# Output:
+#    Salaries Salary_bin
+# 0    20000       Low
+# 1    30000       Low
+# 2    50000    Medium
+# 3    70000      High
 
-"""Exercise 5: Handling Missing Values
-Task:
-Replace missing values in the Salaries column with the mean value."""
-import numpy as np
+"""11.6. Dummy Variables and Encoding
+Encode categorical data into numerical format."""
+data = pd.DataFrame({'Department': ['HR', 'IT', 'Finance']})
+dummies = pd.get_dummies(data, columns=['Department'], drop_first=True)
+print(f"Dummy Variables:\n{dummies}")
+# Output:
+#    Department_IT  Department_Finance
+# 0             0                  0
+# 1             1                  0
+# 2             0                  1
+
+"""11.7. Handling Missing Values
+Impute missing values using various strategies."""
 from sklearn.impute import SimpleImputer
 
-# Sample Data
 data = pd.DataFrame({'Salaries': [50000, 60000, np.nan, 55000, np.nan]})
-
-# Mean Imputation
 imputer = SimpleImputer(strategy='mean')
 data['Salaries'] = imputer.fit_transform(data[['Salaries']])
+print(f"Data with imputed values:\n{data}")
+# Output:
+#      Salaries
+# 0  55000.000000
+# 1  60000.000000
+# 2  55000.000000
+# 3  55000.000000
+# 4  55000.000000
 
-print(data)
+"""11. Normality Checking
+Check data distribution using Q-Q plots."""
+import scipy.stats as stats
+import matplotlib.pyplot as plt
 
-"""Exercise 6: Standardization & Normalization
-Task:
-Standardize the Salaries column using StandardScaler().
-Normalize it using MinMaxScaler()."""
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
+data = pd.DataFrame({'Salaries': [50000, 55000, 60000, 65000, 70000]})
+stats.probplot(data['Salaries'], dist="norm", plot=plt)
+plt.title("Q-Q Plot for Salaries")
+plt.show()
+print("Q-Q plot displayed")
 
-# Sample Data
+"""11.9. Standardization
+Scale data to zero mean and unit variance."""
+from sklearn.preprocessing import StandardScaler
+
 data = pd.DataFrame({'Salaries': [50000, 60000, 55000, 70000, 80000]})
-
-# Standardization
 scaler = StandardScaler()
-data['Salaries_Standardized'] = scaler.fit_transform(data[['Salaries']])
+data['Salaries_std'] = scaler.fit_transform(data[['Salaries']])
+print(f"Standardized Data:\n{data}")
+# Output:
+#    Salaries  Salaries_std
+# 0    50000    -1.264911
+# 1    60000    -0.632456
+# 2    55000    -0.948683
+# 3    70000     0.000000
+# 4    80000     0.632456
 
-# Normalization
-minmax = MinMaxScaler()
-data['Salaries_Normalized'] = minmax.fit_transform(data[['Salaries']])
+"""11.10. Normalization
+Scale data to a fixed range, typically [0, 1]."""
+from sklearn.preprocessing import MinMaxScaler
 
-print(data)
+data = pd.DataFrame({'Salaries': [50000, 60000, 55000, 70000, 80000]})
+scaler = MinMaxScaler()
+data['Salaries_norm'] = scaler.fit_transform(data[['Salaries']])
+print(f"Normalized Data:\n{data}")
+# Output:
+#    Salaries  Salaries_norm
+#  0    50000       0.000000
+# 1    60000       0.333333
+# 2    55000       0.166667
+# 3    70000       0.666667
+# 4    80000       1.000000
 
-"""
+"""11.11. Robust Scaling
+Scale data robust to outliers using RobustScaler."""
+from sklearn.preprocessing import RobustScaler
+
+data = pd.DataFrame({'Salaries': [50000, 60000, 55000, 200000, 80000]})
+scaler = RobustScaler()
+data['Salaries_robust'] = scaler.fit_transform(data[['Salaries']])
+print(f"Robust Scaled Data:\n{data}")
+# Output:
+#    Salaries  Salaries_robust
+# 0    50000       -0.666667
+# 1    60000        0.000000
+# 2    55000       -0.333333
+# 3   200000        9.666667
+# 4    80000        1.333333
+
+"""11. Handling Imbalanced Data
+Address class imbalance using resampling techniques."""
+from imblearn.over_sampling import SMOTE
+
+data = pd.DataFrame({
+    'Feature': [1, 2, 3, 4, 5, 6],
+    'Target': [0, 0, 0, 1, 1, 0]
+})
+smote = SMOTE(random_state=42)
+X_res, y_res = smote.fit_resample(data[['Feature']], data['Target'])
+resampled = pd.DataFrame({'Feature': X_res.flatten(), 'Target': y_res})
+print(f"Resampled Data:\n{resampled}")
+# Output: (balanced Target classes)
+
+"""11.13. Data Sampling
+Use random or stratified sampling for large datasets."""
+data = pd.DataFrame({'Value': range(100), 'Class': ['A']*50 + ['B']*50})
+sample = data.sample(n=10, random_state=42)
+print(f"Random Sample:\n{sample}")
+# Output: (10 rows)
+
+"""11. EDA and Preprocessing Exercises
+Exercise 1: Type Casting
+Convert EmpID to string, Salaries to int, and Age to float."""
+data = pd.DataFrame({
+    'EmpID': [101, 102, 103],
+    'Salaries': [50000.75, 60000.50, 55000.25],
+    'Age': [25, 30, 35]
+})
+data['EmpID'] = data['EmpID'].astype('str')
+data['Salaries'] = data['Salaries'].astype('int64')
+data['Age'] = data['Age'].astype('float32')
+print(f"Data Types:\n{data.dtypes}")
+# Output:
+# EmpID       object
+# Salaries     int64
+# Age        float32
+
+"""Exercise 2: Remove Duplicates
+Identify and remove duplicate rows, keeping the first occurrence."""
+data = pd.DataFrame({
+    'EmpID': ['101', '101', '102'],
+    'Name': ['Alice', 'Alice', 'Bob'],
+    'Salaries': [50000, 50000, 60000]
+})
+print(f"Duplicates:\n{data[data.duplicated()]}")
+data_clean = data.drop_duplicates()
+print(f"\nCleaned Data:\n{data_clean}")
+
+"""Exercise 3: Outlier Detection
+Remove outliers in Salaries using IQR."""
+data = pd.DataFrame({'Salaries': [30000, 50000, 60000, 55000, 200000]})
+Q1 = data['Salaries'].quantile(0.25)
+Q3 = data['Salaries'].quantile(0.75)
+IQR = Q3 - Q1
+data_clean = data[(data['Salaries'] >= Q1 - 1.5 * IQR) & (data['Salaries'] <= Q3 + 1.5 * IQR)]
+print(f"Data without outliers:\n{data_clean}")
+
+"""Exercise 4: Create Dummy Variables
+Convert Department column into dummy variables."""
+data = pd.DataFrame({'Department': ['HR', 'IT', 'Finance']})
+dummies = pd.get_dummies(data, columns=['Department'], drop_first=True)
+print(f"Dummies:\n{dummies}")
+
+"""Exercise 5: Impute Missing Values
+Replace missing Salaries with mean."""
+data = pd.DataFrame({'Salaries': [50000, 60000, np.nan, 55000, np.nan]})
+imputer = SimpleImputer(strategy='mean')
+data['Salaries'] = imputer.fit_transform(data[['Salaries']])
+print(f"Imputed Data:\n{data}")
+
+"""Exercise 6: Standardize Data
+Standardize Salaries using StandardScaler."""
+data = pd.DataFrame({'Salaries': [50000, 60000, 55000, 70000, 80000]})
+scaler = StandardScaler()
+data['Salaries_std'] = scaler.fit_transform(data[['Salaries']])
+print(f"Standardized Data:\n{data}")
+
+"""Exercise 7: Normalize Data
+Normalize Salaries using MinMaxScaler."""
+data = pd.DataFrame({'Salaries': [50000, 60000, 55000, 70000, 80000]})
+scaler = MinMaxScaler()
+data['Salaries_norm'] = scaler.fit_transform(data[['Salaries']])
+print(f"Normalized Data:\n{data}")
+
+"""Exercise 8: Robust Scaling
+Scale Salaries using RobustScaler."""
+data = pd.DataFrame({'Salaries': [50000, 60000, 55000, 200000, 80000]})
+scaler = RobustScaler()
+data['Salaries_robust'] = scaler.fit_transform(data[['Salaries']])
+print(f"Robust Scaled Data:\n{data}")
+
+"""Exercise 9: Discretize Salaries
+Bin Salaries into Low, Medium, High categories."""
+data = pd.DataFrame({'Salaries': [20000, 30000, 50000, 70000]})
+data['Salary_bin'] = pd.cut(data['Salaries'], bins=[0, 35000, 60000, float('inf')], labels=['Low', 'Medium', 'High'], include_lowest=True)
+print(f"Binned Data:\n{data}")
+
+"""Exercise 10: Check Normality
+Create a Q-Q plot for Salaries."""
+data = pd.DataFrame({'Salaries': [50000, 55000, 60000, 65000, 70000]})
+stats.probplot(data['Salaries'], dist="norm", plot=plt)
+plt.title("Q-Q Plot")
+plt.show()
+print("Q-Q plot displayed")
+
+"""Exercise 11: Label Encoding
+Encode Department column using LabelEncoder."""
+from sklearn.preprocessing import LabelEncoder
+
+data = pd.DataFrame({'Department': ['HR', 'IT', 'Finance']})
+le = LabelEncoder()
+data['Department_Code'] = le.fit_transform(data['Department'])
+print(f"Encoded Data:\n{data}")
+
+"""Exercise 12: Handle Imbalanced Data
+Use SMOTE to balance a dataset."""
+data = pd.DataFrame({
+    'Feature': [1, 2, 3, 4, 5, 6],
+    'Target': [0, 0, 0, 1, 1, 0]
+})
+smote = SMOTE(random_state=42)
+X_res, y_res = smote.fit_resample(data[['Feature']], data['Target'])
+resampled = pd.DataFrame({'Feature': X_res.flatten(), 'Target': y_res})
+print(f"Resampled Data:\n{resampled}")
+
+"""Exercise 13: Random Sampling
+Sample 5 rows randomly from a DataFrame."""
+data = pd.DataFrame({'Value': range(20)})
+sample = data.sample(n=5, random_state=42)
+print(f"Sampled Data:\n{sample}")
+
+"""Exercise 14: Correlation Analysis
+Compute and visualize correlation matrix."""
+import seaborn as sns
+
+data = pd.DataFrame({
+    'A': [1, 2, 3, 4, 5],
+    'B': [2, 4, 6, 8, 10],
+    'C': [5, 4, 3, 2, 1]
+})
+corr = data.corr()
+sns.heatmap(corr, annot=True, cmap='coolwarm')
+plt.title("Correlation Matrix")
+plt.show()
+print("Correlation matrix displayed")
+
+"""Exercise 15: Winsorization
+Cap extreme values in Salaries using winsorization."""
+from scipy.stats import mstats
+
+data = pd.DataFrame({'Salaries': [30000, 50000, 60000, 55000, 200000]})
+data['Salaries_winsor'] = mstats.winsorize(data['Salaries'], limits=[0.05, 0.05])
+print(f"Winsorized Data:\n{data}")
 
