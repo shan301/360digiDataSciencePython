@@ -1,264 +1,283 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Mar 13 21:01:23 2025
+Updated for repository consistency and additional concepts.
 
 @author: Shantanu
 """
 
-""" Data Analytics using python-
-fundamental libraries such as:
+"""9. Data Analytics Using Python
+This module covers essential libraries and techniques for data analytics, including numerical operations (NumPy), data manipulation (pandas), and visualization (Matplotlib, Seaborn).
 
-*NumPy - For numerical operations, array manipulations, memory efficiency, broadcasting, and matrix operations.
-*Pandas - For data manipulation and analysis, including creating data frames, accessing elements, 
-performing operations like merging, concatenation, and handling missing data.
-*Matplotlib - For data visualization, including bar plots, histograms, and box plots.
-*Seaborn - For advanced visualization, including detecting outliers in data.
-
-1. NumPy (Numerical Python)
-NumPy is a powerful library for handling numerical data, offering multi-dimensional arrays and various mathematical functions.
-
-Key Features
-Efficient array operations
-Broadcasting (operations between different-sized arrays)
-Memory efficiency
-Random number generation """
-
+9.1. NumPy Basics
+NumPy provides efficient array operations for numerical computations."""
 import numpy as np
 
-# Creating a NumPy array
-x = np.array([10, 21, 3, 14, 15, 16])
-print(x * 2)  # Multiplies each element by 2
+# Create and manipulate array
+arr = np.array([10, 21, 3, 14, 15, 16])
+print(f"Array * 2: {arr * 2}")  # Output: Array * 2: [20 42  6 28 30 32]
+print(f"Values > 10: {arr[arr > 10]}")  # Output: Values > 10: [21 14 15 16]
 
-# Boolean filtering
-print(x[x > 10])  # Returns elements greater than 10
+# Random number generation
+print(f"Random integer (3-9): {np.random.randint(3, 9)}")  # Output: Varies, e.g., 5
 
-# Random integer generation
-from numpy import random
-print(random.randint(3, 9))  # Generates a random integer between 3 and 9
-
-# Memory sharing example
-a = np.arange(10)
-b = a[::2]  # b is a view of a, sharing the same memory
-print(np.shares_memory(a, b))
-
-"""2. Data Structures
-Python provides multiple ways to store and manipulate data, such as arrays, lists, and matrices.
-
-Arrays """
-
+"""9.2. Python Arrays
+Arrays are lightweight alternatives to lists for numerical data."""
 from array import array
 
 arr = array('i', [10, 20, 30, 40, 50])
-arr.insert(1, 60)  # Insert 60 at index 1
-arr.remove(40)  # Remove 40
-arr[2] = 80  # Update index 2
-print(arr)
+arr.insert(1, 60)
+arr.remove(40)
+arr[2] = 80
+print(f"Array: {arr.tolist()}")  # Output: Array: [10, 60, 80, 30, 50]
 
-"""2D Arrays"""
-
+"""9.3. 2D Arrays and Matrices
+Handle multi-dimensional data structures."""
+# 2D array
 T = [[11, 12, 5, 2], [15, 6, 10], [10, 8, 12, 5]]
-print(T[1][2])  # Access value at row 1, column 2
+print(f"Element at [1][2]: {T[1][2]}")  # Output: Element at [1][2]: 10
 
-"""Matrices"""
+# Matrix using NumPy
+matrix = np.array([[1, 2], [3, 4]])
+print(f"Matrix:\n{matrix}")  # Output: Matrix: [[1 2], [3 4]]
 
-import numpy as np
-
-m = np.matrix('1 2; 3 4')  # Creating a 2x2 matrix
-print(m)
-
-
-"""3. Pandas (Data Manipulation)
-Pandas is essential for working with tabular data.
-
-Creating DataFrames"""
-
+"""9.4. Pandas DataFrames
+Pandas is ideal for tabular data manipulation."""
 import pandas as pd
 
 df = pd.DataFrame({"X1": [1, 2, 3], "X2": [4, 8, 12]})
-print(df)
+print(f"DataFrame:\n{df}")
+# Output:
+#    X1  X2
+# 0   1   4
+# 1   2   8
+# 2   3  12
 
-"""Accessing Data"""
+"""9.5. Accessing Data
+Access columns, rows, or specific elements."""
+print(f"Column X1: {df['X1'].tolist()}")  # Output: Column X1: [1, 2, 3]
+print(f"Row 0-2, Column X2: {df.iloc[0:3, 1].tolist()}")  # Output: Row 0-2, Column X2: [4, 8, 12]
 
-print(df.X1)  # Access column using dot notation
-print(df["X1"])  # Access column using bracket notation
-print(df.iloc[0:3, 1])  # Access rows 0 to 3 in column at index 1
-"""Statistics"""
+"""9.6. Data Statistics
+Compute summary statistics."""
+print(f"Mean of X1: {df['X1'].mean()}")  # Output: Mean of X1: 2.0
+print(f"Summary:\n{df.describe()}")
+# Output:
+#              X1         X2
+# count  3.000000   3.000000
+# mean   2.000000   8.000000
+# std    1.000000   4.000000
+# ...
 
-print(df['X1'].mean())  # Mean
-print(df.describe())  # Summary statistics
-
-"""Merging & Concatenation"""
-
+"""9.7. Merging and Concatenation
+Combine DataFrames using merge or concat."""
 df1 = pd.DataFrame({"X1": [1, 2, 3], "X2": [4, 8, 12]})
 df2 = pd.DataFrame({"X1": [1, 2, 3, 4], "X3": [14, 18, 112, 15]})
+merged = pd.merge(df1, df2, on="X1")
+print(f"Merged:\n{merged}")
+# Output:
+#    X1  X2   X3
+# 0   1   4   14
+# 1   2   8   18
+# 2   3  12  112
 
-merged = pd.merge(df1, df2, on="X1")  # Merge on X1
-print(merged)
+"""9.8. Handling Missing Data
+Identify and manage missing values."""
+df_missing = pd.DataFrame({"grade1": [1, 2, 3, 4, np.nan], "grade2": [np.nan, 11, 12, 100, 200]})
+print(f"Missing Values:\n{df_missing.isna().sum()}")
+# Output:
+# grade1    1
+# grade2    1
 
-concatenated = pd.concat([df1, df2])  # Concatenate dataframes
-print(concatenated)
+"""9.9. Data Transformation with apply/map
+Apply custom functions to transform data."""
+df['X1_squared'] = df['X1'].apply(lambda x: x**2)
+print(f"DataFrame with X1_squared:\n{df}")
+# Output:
+#    X1  X2  X1_squared
+# 0   1   4           1
+# 1   2   8           4
+# 2   3  12           9
 
-"""Handling Missing Data"""
+"""9.10. Handling Categorical Data
+Encode categorical variables for analysis."""
+df_cat = pd.DataFrame({"Category": ["A", "B", "A", "C"]})
+df_cat['Category_Code'] = df_cat['Category'].astype('category').cat.codes
+print(f"Categorical Data:\n{df_cat}")
+# Output:
+#   Category  Category_Code
+# 0        A              0
+# 1        B              1
+# 2        A              0
+# 3        C              2
 
-df = pd.DataFrame({"grade1": [1, 2, 3, 4, np.nan], "grade2": [np.nan, 11, 12, 100, 200]})
-print(df.isna().sum())  # Count missing values
-df.dropna()  # Remove rows with missing values
+"""9.11. Time Series Basics
+Work with datetime data for temporal analysis."""
+dates = pd.date_range("2023-01-01", periods=3, freq="D")
+df_time = pd.DataFrame({"Value": [10, 15, 20]}, index=dates)
+print(f"Time Series DataFrame:\n{df_time}")
+# Output:
+#             Value
+# 2023-01-01     10
+# 2023-01-02     15
+# 2023-01-03     20
 
+"""9.12. Reading External Files
+Read data from CSV or Excel files."""
+try:
+    df_csv = pd.DataFrame({'workex': [1, 2, 3], 'gmat': [600, 650, 700]})  # Mock data
+    print(f"Mock CSV Data:\n{df_csv}")
+except FileNotFoundError:
+    print("Error: CSV file not found")
 
-"""4. Reading External Files"""
+"""9.13. Exploratory Data Analysis (EDA)
+Compute measures of central tendency and dispersion."""
+print(f"Mean workex: {df_csv['workex'].mean()}")  # Output: Mean workex: 2.0
+print(f"Std gmat: {df_csv['gmat'].std()}")       # Output: Std gmat: 50.0
 
-df = pd.read_csv("education.csv")  # Read CSV file
-print(df.info())  # Get data summary
-print(df.describe())  # Get statistics
-
-
-"""5. Exploratory Data Analysis (EDA)
-Measures of Central Tendency"""
-
-print(df['workex'].mean())  # Mean
-print(df['workex'].median())  # Median
-print(df['workex'].mode())  # Mode
-
-"""Measures of Dispersion"""
-
-print(df['workex'].var())  # Variance
-print(df['workex'].std())  # Standard Deviation
-
-"""Skewness & Kurtosis"""
-
-print(df['workex'].skew())  # Skewness
-print(df['workex'].kurt())  # Kurtosis
-
-
-"""6. Data Visualization
-Matplotlib"""
-
+"""9.14. Data Visualization
+Visualize data using Matplotlib and Seaborn."""
 import matplotlib.pyplot as plt
-import numpy as np
-
-# Bar plot
-plt.bar(height=df['gmat'], x=np.arange(len(df)))
-plt.show()
-
-# Histogram
-plt.hist(df['gmat'])
-plt.show()
-
-# Box plot
-plt.boxplot(df['gmat'])
-plt.show()
-
-"""Seaborn"""
-
 import seaborn as sns
 
-sns.boxplot(df['gmat'])  # Box plot for outliers
+# Bar plot
+plt.bar(np.arange(len(df_csv)), df_csv['gmat'], color='skyblue')
+plt.title("GMAT Scores")
 plt.show()
 
+# Seaborn boxplot
+sns.boxplot(data=df_csv['gmat'])
+plt.title("GMAT Distribution")
+plt.show()
 
+"""9. Data Analytics Exercises
+Exercise 1: NumPy Even Numbers
+Create a NumPy array from 10 to 50 and print even numbers."""
+arr = np.arange(10, 51)
+print(f"Even numbers: {arr[arr % 2 == 0]}")
+# Output: Even numbers: [10 12 14 ... 48 50]
 
-"""Conclusion
-This script covers essential data analytics concepts:
+"""Exercise 2: NumPy 3x3 Matrix
+Create a 3x3 NumPy array with values from 1 to 9."""
+matrix = np.arange(1, 10).reshape(3, 3)
+print(f"3x3 Matrix:\n{matrix}")
+# Output:
+# [[1 2 3]
+#  [4 5 6]
+#  [7 8 9]]
 
-NumPy for efficient numerical computations.
-Pandas for data manipulation and analysis.
-Matplotlib & Seaborn for visualization.
-Exploratory Data Analysis (EDA) for insights."""
-
-
-"""Exercises-
- 1. NumPy Exercises
-Q1: Create a NumPy array of integers from 10 to 50. Print only even numbers from it."""
-import numpy as np
-
-arr = np.arange(10, 51)  # Create array from 10 to 50
-even_numbers = arr[arr % 2 == 0]  # Select even numbers
-print(even_numbers)
-
-"""Q2: Create a 3x3 NumPy array with values ranging from 1 to 9."""
-
-arr = np.arange(1, 10).reshape(3, 3)
-print(arr)
-
-"""Q3: Generate a random 4x4 matrix and replace all values greater than 0.5 with 1, and the rest with 0."""
-
-arr = np.random.rand(4, 4)  # Generate random numbers
+"""Exercise 3: NumPy Binary Matrix
+Generate a 4x4 random matrix and replace values > 0.5 with 1, others with 0."""
+np.random.seed(42)  # For reproducibility
+arr = np.random.rand(4, 4)
 arr[arr > 0.5] = 1
 arr[arr <= 0.5] = 0
-print(arr)
+print(f"Binary Matrix:\n{arr}")
+# Output: (varies based on seed)
 
-
-"""2. Pandas Exercises
-Q4: Create a DataFrame with 3 columns: "Name", "Age", and "City". Add 5 rows of data."""
-
-import pandas as pd
-
+"""Exercise 4: Create DataFrame
+Create a DataFrame with Name, Age, and City columns for 5 rows."""
 data = {
     "Name": ["Amit", "Sara", "John", "Lisa", "Raj"],
     "Age": [25, 30, 27, 22, 29],
     "City": ["Mumbai", "Delhi", "New York", "London", "Bangalore"]
 }
-
 df = pd.DataFrame(data)
-print(df)
+print(f"DataFrame:\n{df}")
+# Output:
+#     Name  Age       City
+# 0   Amit   25     Mumbai
+# 1   Sara   30      Delhi
+# ...
 
-"""Q5: Load a CSV file and display its first 5 rows."""
+"""Exercise 5: Add Salary Column
+Add a Salary column with random values between 40000 and 80000."""
+np.random.seed(42)
+df['Salary'] = np.random.randint(40000, 80000, size=len(df))
+print(f"DataFrame with Salary:\n{df}")
+# Output: (varies based on seed)
 
-df = pd.read_csv("education.csv")  # Replace with your file path
-print(df.head())  # Show first 5 rows
+"""Exercise 6: Filter by Age
+Filter rows where Age is greater than 25."""
+filtered = df[df['Age'] > 25]
+print(f"Filtered DataFrame:\n{filtered}")
+# Output:
+#     Name  Age       City  Salary
+# 1   Sara   30      Delhi   ...
+# 2   John   27  New York   ...
+# 4    Raj   29  Bangalore  ...
 
-"""Q6: Add a new column "Salary" to the DataFrame in Q4 with random values between 40,000 and 80,000. """
+"""Exercise 7: Average Salary
+Compute the average Salary."""
+print(f"Average Salary: {df['Salary'].mean()}")
+# Output: Average Salary: (varies)
 
-import numpy as np
+"""Exercise 8: Handle Missing Values
+Create a DataFrame with missing values and fill with column means."""
+data_missing = {"A": [1, 2, np.nan], "B": [np.nan, 5, 6]}
+df_missing = pd.DataFrame(data_missing)
+df_missing.fillna(df_missing.mean(), inplace=True)
+print(f"Filled DataFrame:\n{df_missing}")
+# Output:
+#      A    B
+# 0  1.0  5.5
+# 1  2.0  5.0
+# 2  1.5  6.0
 
-df["Salary"] = np.random.randint(40000, 80000, size=len(df))
-print(df)
+"""Exercise 9: Apply Transformation
+Add a column with Age doubled using apply."""
+df['Age_Doubled'] = df['Age'].apply(lambda x: x * 2)
+print(f"DataFrame with Age_Doubled:\n{df}")
+# Output: (includes Age_Doubled column)
 
-"""Q7: Filter out rows where Age is greater than 25."""
+"""Exercise 10: Encode Categorical Data
+Encode the City column as categorical codes."""
+df['City_Code'] = df['City'].astype('category').cat.codes
+print(f"DataFrame with City_Code:\n{df}")
+# Output: (includes City_Code column)
 
-filtered_df = df[df["Age"] > 25]
-print(filtered_df)
+"""Exercise 11: Time Series Resampling
+Create a time series DataFrame and resample to compute daily mean."""
+dates = pd.date_range("2023-01-01", periods=6, freq="H")
+df_time = pd.DataFrame({"Value": [10, 12, 14, 16, 18, 20]}, index=dates)
+daily_mean = df_time.resample('D').mean()
+print(f"Daily Mean:\n{daily_mean}")
+# Output:
+#             Value
+# 2023-01-01   15.0
 
-"""Q8: Find the average salary from the DataFrame."""
-
-average_salary = df["Salary"].mean()
-print("Average Salary:", average_salary)
-
-
-
-"""3. Data Visualization Exercises
-Q9: Create a bar plot showing the number of people from each city in Q4."""
-
-import matplotlib.pyplot as plt
-
-df["City"].value_counts().plot(kind="bar", color="skyblue")
+"""Exercise 12: Bar Plot
+Create a bar plot of City counts."""
+df['City'].value_counts().plot(kind="bar", color="skyblue")
 plt.xlabel("City")
 plt.ylabel("Count")
-plt.title("Number of People in Each City")
+plt.title("Number of People by City")
 plt.show()
+print("Bar plot displayed")
 
-"""Q10: Create a histogram of ages from the DataFrame in Q4."""
-
-plt.hist(df["Age"], bins=5, color="green", edgecolor="black")
+"""Exercise 13: Histogram
+Create a histogram of Ages."""
+plt.hist(df['Age'], bins=5, color="green", edgecolor="black")
 plt.xlabel("Age")
 plt.ylabel("Frequency")
 plt.title("Age Distribution")
 plt.show()
+print("Histogram displayed")
 
-"""Q11: Create a box plot to visualize salary distribution from the DataFrame in Q4."""
-
-import seaborn as sns
-
-sns.boxplot(df["Salary"])
+"""Exercise 14: Box Plot
+Create a box plot of Salaries."""
+sns.boxplot(data=df['Salary'])
 plt.title("Salary Distribution")
 plt.show()
+print("Box plot displayed")
 
-
-
-"""Q12: Load the CSV file ("education.csv"), find missing values, and replace them with the column mean."""
-
-df = pd.read_csv("education.csv")
-print("Missing Values:\n", df.isna().sum())  # Count missing values
-
-df.fillna(df.mean(), inplace=True)  # Replace with column mean
-print("After Filling Missing Values:\n", df.isna().sum())  # Check again
+"""Exercise 15: Merge DataFrames
+Merge two DataFrames on a common column."""
+df1 = pd.DataFrame({"ID": [1, 2, 3], "Name": ["Amit", "Sara", "John"]})
+df2 = pd.DataFrame({"ID": [1, 2, 4], "Score": [85, 90, 88]})
+merged = pd.merge(df1, df2, on="ID", how="inner")
+print(f"Merged DataFrame:\n{merged}")
+# Output:
+#    ID  Name  Score
+# 0   1  Amit     85
+# 1   2  Sara     90
